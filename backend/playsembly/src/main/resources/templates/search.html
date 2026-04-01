@@ -1,0 +1,26 @@
+<form th:action="@{/bgg/search}" method="post">
+    <input type="text" name="query" placeholder="Search board games">
+    <button type="submit">Search</button>
+</form>
+
+<div th:if="${results}">
+    <h2>Results</h2>
+
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Year</th>
+            <th></th>
+        </tr>
+
+        <tr th:each="game : ${results}">
+            <td th:text="${game.name}"></td>
+            <td th:text="${game.year}"></td>
+            <td>
+                <form th:action="@{/bgg/import/{id}(id=${game.id})}" method="post">
+                    <button type="submit">Import</button>
+                </form>
+            </td>
+        </tr>
+    </table>
+</div>

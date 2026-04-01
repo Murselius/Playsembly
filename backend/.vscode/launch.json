@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot Launch (Local Postgres)",
+            "request": "launch",
+            "mainClass": "playsembly.backend.playsembly.PlaysemblyApplication",
+            "env": {
+                "SPRING_PROFILES_ACTIVE": "prod",
+                "SPRING_DATASOURCE_URL": "jdbc:postgresql://localhost:5432/playsemblydb",
+                "SPRING_DATASOURCE_USERNAME": "Murselius",
+                "SPRING_DATASOURCE_PASSWORD": "12345678"
+            }
+        },
+        {
+            "type": "java",
+            "name": "Launch: H2 (Memory)",
+            "request": "launch",
+            "mainClass": "playsembly.backend.playsembly.PlaysemblyApplication",
+            "env": {
+                "SPRING_PROFILES_ACTIVE": "dev"
+            }
+        }
+    ]
+}
