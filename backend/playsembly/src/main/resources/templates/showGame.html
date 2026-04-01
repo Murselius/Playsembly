@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Game Session</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+</head>
+
+<body class="bg-light">
+
+<div class="container py-5">
+
+    <!-- 🔔 FLASH MESSAGES -->
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="card shadow-lg border-0">
+
+                <!-- 🎮 GAME IMAGE -->
+                <img th:if="${game.boardgame != null and game.boardgame.imageUrl != null}"
+                     th:src="${game.boardgame.imageUrl}"
+                     class="card-img-top"
+                     style="max-height: 300px; object-fit: cover; object-position: 40% 30%;">
+
+                <div class="card-body">
+
+                    <!-- 🎮 NAME -->
+                    <h2 class="card-title" th:text="${game.boardgame.name}">Game Name</h2>
+
+                    <!-- 🕒 TIME -->
+                    <p class="text-muted">
+                        <i class="bi bi-clock"></i>
+                        <span th:text="|${#temporals.format(game.startTime, 'dd.MM.yyyy HH:mm')} 
+                        - ${#temporals.format(game.startTime.plusMinutes(game.estimatedDuration), 'HH:mm')}|">
+                        </span>
+                    </p>
+
+                    <!-- 👤 CREATOR -->
+                    <p class="text-muted">
+                        <i class="bi bi-person"></i>
+                        <span th:text="${game.creator.username}">Creator</span>
+                    </p>
+
+                    <!-- 👥 PLAYER COUNT -->
+                    <p>
+                        <i class="bi bi-people"></i>
+                        <span th:text="|${game.participantCount} / ${game.maxPlayers}|"></span>
+                    </p>
+
+                    <!-- 📊 PLAYER BAR -->
+                    <div class="progress mb-3">
+                        <div class="progress-bar"
+                             role="progressbar"
+                             th:style="'width: ' + (${game.participantCount} * 100 / ${game.maxPlayers}) + '%'">
+                        </div>
+                    </div>
+
+                    <!-- 📘 RULES -->
+                    <p th:if="${game.rulesExplanationNeeded}" class="text-warning">
+                        <i class="bi bi-info-circle"></i> Rules explanation needed
+                    </p>
+
+                    <hr>
+
+                    <!-- 🧾 SESSION DESCRIPTION -->
+                    <h5>Session Info</h5>
+                    <p style="white-space: pre-line;"
+                       th:utext="${game.description}">
+                    </p>
+
+                    <!-- 🧾 GAME DESCRIPTION -->
+                    <h5 class="mt-4">About the Game</h5>
+                    <p style="white-space: pre-line;"
+                       th:text="${game.boardgame.description}">
+                    </p>
+
+                    <!-- 👥 PARTICIPANTS -->
+                    <h5 class="mt-4">Participants</h5>
+
+                    <div th:if="${#lists.isEmpty(game.participants)}" class="text-muted mb-3">
+                        No participants yet
+                    </div>
+
+                    <ul class="list-group mb-3"
+                        th:if="${!#lists.isEmpty(game.participants)}">
+
+                        <li class="list-group-item d-flex justify-content-between align-items-center"
+                            th:each="user : ${game.participants}">
+
+                            <span th:text="${user.username}"
+                                  th:classappend="${user.id == #authentication.principal.id} ? 'fw-bold text-success'">
+                                Username
+                            </span>
+
+                            <!-- Creator badge -->
+                            <span th:if="${user.id == game.creator.id}"
+                                  class="badge bg-primary">
+                                Creator
+                            </span>
+
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+
+            <!-- JOIN -->
+            <div th:if="${!game.participantIds.contains(#authentication.principal.id) 
+                        and game.participantCount < game.maxPlayers}">
+                <form th:action="@{/game/{id}/join(id=${game.id})}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="btn btn-primary mt-3">
+                        <i class="bi bi-person-plus"></i> Join
+                    </button>
+                </form>
+            </div>
+
+            <!-- LEAVE -->
+            <div th:if="${game.participantIds.contains(#authentication.principal.id)}">
+                <form th:action="@{/game/{id}/unjoin(id=${game.id})}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="btn btn-warning mt-3">
+                        <i class="bi bi-person-dash"></i> Leave
+                    </button>
+                </form>
+            </div>
+
+            <!-- FULL -->
+            <div th:if="${!game.participantIds.contains(#authentication.principal.id) 
+                        and game.participantCount >= game.maxPlayers}">
+                <button class="btn btn-secondary mt-3" disabled>
+                    <i class="bi bi-person-x"></i> Full
+                </button>
+            </div>
+
+            <!-- 🔙 BACK -->
+            <div class="text-center mt-4">
+                <a th:href="@{/event/{id}(id=${game.event.id})}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i> Back to event
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

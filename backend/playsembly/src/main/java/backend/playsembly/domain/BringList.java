@@ -1,5 +1,5 @@
 package backend.playsembly.domain;
 
-public class EventStatsDTO {
+public class BringList {
     
 }
