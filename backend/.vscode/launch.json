@@ -18,9 +18,7 @@
             "request": "launch",
             "mainClass": "playsembly.backend.playsembly.PlaysemblyApplication",
             "env": {
-                "SPRING_PROFILES_ACTIVE": "dev",
-                "BGG_API_TOKEN":"efe9956a-015f-49bb-b92f-589c0366e95e",
-                "ADMIN_PASSWORD":"~/TZA1-7m>6W"
+                "SPRING_PROFILES_ACTIVE": "dev"
             }
         }
     ]
