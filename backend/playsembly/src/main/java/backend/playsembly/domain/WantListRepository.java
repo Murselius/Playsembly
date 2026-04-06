@@ -1,9 +1,11 @@
 package backend.playsembly.domain;
 
-import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-import org.springframework.data.repository.CrudRepository;
+import java.util.Optional;
 
-public interface WantListRepository extends CrudRepository<WantListItem, Long> {
-    List<WantListItem> findByEvent(Event event);
+public interface WantListRepository extends JpaRepository<WantList, Long> {
+    Optional<WantList> findByEvent(Event event);
+
+    Optional<WantList> findByEventId(Long eventId);
 }

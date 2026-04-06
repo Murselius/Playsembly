@@ -8,7 +8,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true) //vastine sisältää paljon sälää, ohitetaan ne mitä ei haluta
 public class SearchResponse {
 
-    // 🔹 Lisätään total-attribuutti
+    //Lisätään total-attribuutti, tulosten lukumäärä
     @JacksonXmlProperty(isAttribute = true)
     private int total;
 

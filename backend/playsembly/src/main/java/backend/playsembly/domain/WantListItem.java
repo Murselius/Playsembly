@@ -1,7 +1,9 @@
 package backend.playsembly.domain;
 
-import backend.playsembly.domain.bgg.BoardGame;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+import backend.playsembly.domain.bgg.BoardGame;
 
 @Entity
 public class WantListItem {
@@ -11,52 +13,37 @@ public class WantListItem {
     private Long id;
 
     @ManyToOne
+    private WantList wantList;
+
+    @ManyToOne
+    private AppUser user;
+
+    @ManyToOne
     private Event event;
 
     @ManyToOne
     private BoardGame boardgame;
 
-    @ManyToOne
-    private AppUser user;
+    private LocalDateTime addedAt;
 
-    public WantListItem() {}
+    // Getterit ja setterit
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public Long getId() {
-        return id;
-    }
+    public WantList getWantList() { return wantList; }
+    public void setWantList(WantList wantList) { this.wantList = wantList; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public AppUser getUser() { return user; }
+    public void setUser(AppUser user) { this.user = user; }
 
-    public Event getEvent() {
-        return event;
-    }
+    public BoardGame getBoardgame() { return boardgame; }
+    public void setBoardgame(BoardGame boardgame) { this.boardgame = boardgame; }
 
-    public void setEvent(Event event) {
-        this.event = event;
-    }
-
-    public BoardGame getBoardgame() {
-        return boardgame;
-    }
-
-    public void setBoardgame(BoardGame boardgame) {
-        this.boardgame = boardgame;
-    }
-
-    public AppUser getUser() {
-        return user;
-    }
-
-    public void setUser(AppUser user) {
-        this.user = user;
-    }
-
-    @Override
-    public String toString() {
-        return "WantListItem [id=" + id + ", event=" + event + ", boardgame=" + boardgame + ", user=" + user + "]";
-    }
+    public LocalDateTime getAddedAt() { return addedAt; }
+    public void setAddedAt(LocalDateTime addedAt) { this.addedAt = addedAt; }
+    
+    public Event getEvent() { return event; }
+    public void setEvent(Event event) { this.event = event; }
 
     
 }

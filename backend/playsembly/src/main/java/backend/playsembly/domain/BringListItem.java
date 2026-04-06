@@ -1,7 +1,9 @@
 package backend.playsembly.domain;
 
-import backend.playsembly.domain.bgg.BoardGame;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
+import backend.playsembly.domain.bgg.BoardGame;
 
 @Entity
 public class BringListItem {
@@ -14,49 +16,34 @@ public class BringListItem {
     private Event event;
 
     @ManyToOne
-    private BoardGame boardgame;
-
-    @ManyToOne
     private AppUser user;
 
-    public BringListItem() {}
+    @ManyToOne
+    private BringList bringList;
 
-    public Long getId() {
-        return id;
-    }
+    @ManyToOne
+    private BoardGame boardgame;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    private LocalDateTime addedAt;
 
-    public Event getEvent() {
-        return event;
-    }
+    // Getterit ja setterit
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setEvent(Event event) {
-        this.event = event;
-    }
+    public Event getEvent() { return event; }
+    public void setEvent(Event event) { this.event = event; }
 
-    public BoardGame getBoardgame() {
-        return boardgame;
-    }
+    public AppUser getUser() { return user; }
+    public void setUser(AppUser user) { this.user = user; }
 
-    public void setBoardgame(BoardGame boardgame) {
-        this.boardgame = boardgame;
-    }
+    public BoardGame getBoardgame() { return boardgame; }
+    public void setBoardgame(BoardGame boardgame) { this.boardgame = boardgame; }
 
-    public AppUser getUser() {
-        return user;
-    }
+    public LocalDateTime getAddedAt() { return addedAt; }
+    public void setAddedAt(LocalDateTime addedAt) { this.addedAt = addedAt; }
 
-    public void setUser(AppUser user) {
-        this.user = user;
-    }
-
-    @Override
-    public String toString() {
-        return "BringListItem [id=" + id + ", event=" + event + ", boardgame=" + boardgame + ", user=" + user + "]";
-    }
+    public BringList getBringList() { return bringList; }
+    public void setBringList(BringList bringList) { this.bringList = bringList; }
 
     
 }

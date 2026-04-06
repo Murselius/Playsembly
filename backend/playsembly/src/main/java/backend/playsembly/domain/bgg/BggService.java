@@ -1,7 +1,6 @@
 package backend.playsembly.domain.bgg;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,9 +23,8 @@ public class BggService {
     private final BoardGameRepository repository;
     private final RestTemplate restTemplate = new RestTemplate();
     private final XmlMapper xmlMapper = new XmlMapper();
-    private final Map<String, List<SearchResultDTO>> cache = new HashMap<>();
 
-    // 🔹 Injektoitu token propertiesista
+    //Injektoitu bgg -autorisointi token environmentista
     @Value("${bgg.api.token}")
     private String bggToken;
 
@@ -34,15 +32,17 @@ public class BggService {
         this.repository = repository;
     }
 
-    // 🔹 Hakee pelejä BGG:stä
+    //Hakee pelejä BGG:stä heidän xml -apin kautta
     public List<SearchResultDTO> searchGames(String query) throws Exception {
 
         String url = "https://boardgamegeek.com/xmlapi2/search?query=" + query + "&type=boardgame";
 
+        //lisätään headeriin oma bgg-token jotta query menee läpi
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + bggToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
+        //response olio
         ResponseEntity<String> response = restTemplate.exchange(
                 url,
                 HttpMethod.GET,
@@ -50,12 +50,15 @@ public class BggService {
                 String.class
         );
 
+        //tehdään oliosta string muoto
         String xml = response.getBody();
 
         System.out.println(xml);
 
+        //xmlMapper tallettaa searchResponseen halutut kentät aiemmin muodostetusta string -esityksestä
         SearchResponse searchResponse = xmlMapper.readValue(xml, SearchResponse.class);
 
+        //Tehdään uusi lista haun tulosten DTO:ista
         List<SearchResultDTO> results = Collections.emptyList();
 
         if (searchResponse.getItem() != null) {
@@ -68,6 +71,8 @@ public class BggService {
                 ))
                 .toList();
         }
+        
+        //Ajetaan lista kuvien lisäyksen läpi ja palautetaan se
         return enrichWithImages(results);
     }
 
@@ -79,12 +84,15 @@ public class BggService {
                 .map(r -> r.getId().toString())
                 .collect(Collectors.joining(","));
 
+        //Muodostetaan String muotoinen url jossa loppuun lisätään pelin id jotta osataan hakea oikea kuva
         String url = "https://boardgamegeek.com/xmlapi2/thing?id=" + ids;
 
+        //Lisätään taas bgg -token jotta haku menee läpi
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + bggToken);
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
+        //Luodaan haun vastineolio
         ResponseEntity<String> response = restTemplate.exchange(
                 url,
                 HttpMethod.GET,
@@ -92,11 +100,13 @@ public class BggService {
                 String.class
         );
 
+        //Tehdään vastineesta string -muoto
         String xml = response.getBody();
 
+        //Ajetaan string xmlMapperin läpi ja otetaan haluttu data talteen
         ThingResponse thingResponse = xmlMapper.readValue(xml, ThingResponse.class);
 
-        // map id → image
+        // mapataan jokaisesta id:n perusteella → image
         Map<Long, String> imageMap = thingResponse.getItems().stream()
                 .collect(Collectors.toMap(
                         GameItem::getId,
@@ -106,7 +116,7 @@ public class BggService {
         // yhdistä kuvat search tuloksiin
         results.forEach(r -> r.setImageUrl(imageMap.get(r.getId())));
 
-        
+        //palauta tulokset kuvineen
         return results;
     }
 

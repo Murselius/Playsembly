@@ -4,13 +4,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 import java.util.Collection;
 import java.util.List;
@@ -23,12 +19,16 @@ public class AppUser implements UserDetails {
     private Long id;
 
     @Column(name = "username", nullable = false, unique = true)
+    @NotBlank(message = "Username is required")
+    @Size(min = 3, max = 50, message = "Username must be between 3 and 50 characters")
     private String username;
 
     @Column(name = "password", nullable = false)
+    @NotBlank(message = "Password hash is required")
     private String passwordHash;
 
     @Column(name = "role", nullable = false)
+    @NotBlank(message = "Role is required")
     private String role;
 
     @OneToMany(mappedBy = "creator")
@@ -58,8 +58,7 @@ public class AppUser implements UserDetails {
         return username;
     }
 
-    
-
+    // ───────── Getters & Setters ─────────
     public void setUsername(String username) {
         this.username = username;
     }
@@ -104,4 +103,9 @@ public class AppUser implements UserDetails {
     public boolean isCredentialsNonExpired() { return true; }
     @Override
     public boolean isEnabled() { return true; }
+
+    @Override
+    public String toString() {
+        return "AppUser [id=" + id + ", username=" + username + ", role=" + role + "]";
+    }
 }

@@ -5,6 +5,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +16,7 @@ import backend.playsembly.domain.AppUser;
 import backend.playsembly.domain.Event;
 import backend.playsembly.domain.GameSession;
 import backend.playsembly.domain.GameSessionRepository;
+import jakarta.validation.Valid;
 
 @Controller
 public class GameSessionController {
@@ -67,26 +69,37 @@ public class GameSessionController {
         return "createGame"; // käytetään samaa lomaketta kuin uuden luonti
     }
 
-    //Muokatun pelin tallennus säilyttäen olemassa oleva osallistujalista.
+    //Muokatun pelin tallennus säilyttäen olemassa oleva osallistujalista. Moderator oikeuksinen tai pelin luonut käyttäjä.
     @PostMapping("/game/update/{id}")
-    @PreAuthorize("hasAnyAuthority('USER','MODERATOR','ADMIN')")
+    @PreAuthorize("@gameSecurity.isCreatorOrAdmin(#id, principal)")
     public String updateGame(@PathVariable Long id,
-                            @ModelAttribute GameSession updatedGame,
+                            @Valid @ModelAttribute GameSession updatedGame,
+                            BindingResult result,
+                            Model model,
                             RedirectAttributes redirectAttributes) {
+
+        if (result.hasErrors()) {
+            model.addAttribute("game", updatedGame);
+            model.addAttribute("event", updatedGame.getEvent());
+            return "createGame"; // takaisin lomakkeelle
+        }
 
         GameSession existing = gameSessionRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid game id"));
 
-        // 🔒 päivitetään vain sallitut kentät
         existing.setStartTime(updatedGame.getStartTime());
         existing.setDescription(updatedGame.getDescription());
+        existing.setMinPlayers(updatedGame.getMinPlayers());
+        existing.setMaxPlayers(updatedGame.getMaxPlayers());
 
         gameSessionRepository.save(existing);
 
         return "redirect:/event/" + existing.getEvent().getId();
     }
 
+    //Kirjautunut käyttäjä voi liittyä peliin
     @PostMapping("/game/{id}/join")
+    @PreAuthorize("isAuthenticated()")
     public String joinGame(@PathVariable Long id,
                         @AuthenticationPrincipal AppUser currentUser,
                         RedirectAttributes redirectAttributes) {
@@ -108,7 +121,9 @@ public class GameSessionController {
         return "redirect:/game/" + id;
     }
 
+    //Kirjautunut käyttäjä voi poistua pelistä
     @PostMapping("/game/{id}/unjoin")
+    @PreAuthorize("isAuthenticated()")
     public String leaveGame(@PathVariable Long id,
                             @AuthenticationPrincipal AppUser currentUser,
                             RedirectAttributes redirectAttributes) {
@@ -116,7 +131,7 @@ public class GameSessionController {
         GameSession session = gameSessionRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid game session id"));
 
-        // 🔹 Tarkistetaan käyttäjän ID:n perusteella
+        //Tarkistetaan käyttäjän ID:n perusteella
         boolean isParticipant = session.getParticipants().stream()
                 .anyMatch(u -> u.getId().equals(currentUser.getId()));
 
@@ -125,7 +140,7 @@ public class GameSessionController {
             return "redirect:/game/" + id;
         }
 
-        // 🔹 Poistetaan käyttäjä ID:n perusteella
+        //Poistetaan käyttäjä ID:n perusteella
         session.getParticipants().removeIf(u -> u.getId().equals(currentUser.getId()));
         session.setParticipantCount(session.getParticipants().size());
         gameSessionRepository.save(session);
@@ -134,6 +149,7 @@ public class GameSessionController {
         return "redirect:/game/" + id;
     }
 
+    //Pelin luoja tai Mod tai suurempi arvoinen käyttäjä voi poistaa pelin
     @PostMapping("/game/delete/{id}")
     @PreAuthorize("@gameSecurity.isCreatorOrAdmin(#id, principal)")
     public String deleteGame(@PathVariable Long id, RedirectAttributes redirectAttributes) {

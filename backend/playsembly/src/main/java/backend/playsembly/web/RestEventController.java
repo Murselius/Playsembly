@@ -21,7 +21,6 @@ public class RestEventController {
     private final EventRepository eventRepository;
     private final GameSessionRepository gameSessionRepository;
     private final WantListRepository wantListRepository;
-    private final BringListRepository bringListRepository;
     private final BoardGameRepository boardGameRepository;
     private final BggService bggService;
 
@@ -34,7 +33,6 @@ public class RestEventController {
         this.eventRepository = eventRepository;
         this.gameSessionRepository = gameSessionRepository;
         this.wantListRepository = wantListRepository;
-        this.bringListRepository = bringListRepository;
         this.boardGameRepository = boardGameRepository;
         this.bggService = bggService;
     }
@@ -149,17 +147,23 @@ public class RestEventController {
     @GetMapping("/{id}/wantlist")
     public List<?> getWantList(@PathVariable Long id) {
         Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid event id"));
+            .orElseThrow(() -> new IllegalArgumentException("Invalid event id"));
 
-        return wantListRepository.findByEvent(event);
+        WantList wantList = wantListRepository.findByEvent(event)
+        .orElse(new WantList()); // tyhjä lista, jos ei löydy
+
+        return wantList.getItems();
     }
 
     //GET bring list
     @GetMapping("/{id}/bringlist")
     public List<?> getBringList(@PathVariable Long id) {
         Event event = eventRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid event id"));
+            .orElseThrow(() -> new IllegalArgumentException("Invalid event id"));
 
-        return bringListRepository.findByEvent(event);
+        WantList wantList = wantListRepository.findByEvent(event)
+            .orElse(new WantList()); // tyhjä lista, jos ei löydy
+
+        return wantList.getItems();
     }
 }
